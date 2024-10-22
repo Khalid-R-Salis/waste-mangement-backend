@@ -27,3 +27,4 @@ A special behavior for unassigned code points, see https://tools.ietf.org/html/r
 ## License
 
 MIT, 2017-2019 (c) Dmitriy Tsvettsikh
+# TrashAwayBackend
