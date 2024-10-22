@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
-},
+    "start": "nodemon ./src/app.js" 
+  },
   "keywords": [],
   "author": "Patrick",
   "license": "ISC",
