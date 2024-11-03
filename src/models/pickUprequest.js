@@ -21,7 +21,7 @@ const pickUpRequestSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["organic", "recyclable", "hazardous"],
+      enum: ["Organic", "Recyclable", "Hazardous"],
       required: true,
     },
     phone: {

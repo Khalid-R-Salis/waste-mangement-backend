@@ -9,7 +9,7 @@ dotenv.config();
 
 // INITIALIZE EXPRESS
 const app = express();
-app.use(cors());
+app.use(cors("*"));
 
 // MIDDLEWARE
 app.use(express.json());

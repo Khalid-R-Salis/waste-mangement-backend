@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken");
 // AUTH MIDDLEWARE TO PROTECT ROUTES
 exports.authMiddleware = (req, res, next) => {
   try {
-    const token = req.header("Authorization");
+    const authHeaders = req.headers.authorization;
+    const token = authHeaders.split(' ')[1];
     if (!token) {
       return res
         .status(401)
@@ -19,5 +20,6 @@ exports.authMiddleware = (req, res, next) => {
     next();
   } catch (e) {
     res.status(500).json({ error: e.message });
+    console.log('Error from jwt', e)
   }
 };

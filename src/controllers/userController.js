@@ -96,13 +96,33 @@ exports.allUserPickups = async (req, res) => {
 
     const allPickups = await PickUpRequest.find({ userId });
 
+    const user = await User.findOne({ _id: userId });
+
     if (allPickups.length === 0) {
       return res.status(404).json({ message: "No pickups found." });
     }
 
-    res.status(200).json({
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+
+      // Format options
+      const options = { day: "numeric", month: "long", year: "numeric" };
+
+      return date.toLocaleDateString("en-GB", options);
+    };
+
+    const pickupData = allPickups.map(order => ({
+      ...order._doc,
+      time: formatDate(order.time)
+    }))
+
+    return res.status(200).json({
       message: "All pickups retrieved successfully.",
-      allPickups,
+      pickupData,
+      name: user.name,
+      email: user.email,
+      username: user.username,
+      phoneNumber: user.phone
     });
   } catch (error) {
     console.error(error);

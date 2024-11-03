@@ -32,6 +32,7 @@ exports.registerController = async (req, res) => {
     res.json(user);
   } catch (e) {
     res.status(500).json({ error: e.message });
+    console.log(`Error from register`, e)
   }
 };
 
@@ -80,5 +81,6 @@ exports.loginUserController = async (req, res) => {
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
+    console.log('error from login', e)
   }
 };
