@@ -70,8 +70,8 @@ router.get(
 router.post("/user/request-pickup/:userId", authMiddleware, requestPickUp);
 router.post("/user/search-pickup", authMiddleware, searchPickUp);
 
-router.put("/users/:userId", authMiddleware, updateUserProfile);
-router.patch("/users/:userId/password", authMiddleware, updateUserPassword);
+router.patch("/users/:userId", authMiddleware, updateUserProfile);
+router.put("/users/:userId/password", authMiddleware, updateUserPassword);
 router.get("/user/completed-pickup/:userId", authMiddleware, completedPickups);
 router.get("/user/pending-pickup/:userId", authMiddleware, pendingPickups);
 router.get("/user/all-user-pickups/:userId", authMiddleware, allUserPickups);

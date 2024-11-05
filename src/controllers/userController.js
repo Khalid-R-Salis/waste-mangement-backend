@@ -111,10 +111,10 @@ exports.allUserPickups = async (req, res) => {
       return date.toLocaleDateString("en-GB", options);
     };
 
-    const pickupData = allPickups.map(order => ({
+    const pickupData = allPickups.map((order) => ({
       ...order._doc,
-      time: formatDate(order.time)
-    }))
+      time: formatDate(order.time),
+    }));
 
     return res.status(200).json({
       message: "All pickups retrieved successfully.",
@@ -122,7 +122,7 @@ exports.allUserPickups = async (req, res) => {
       name: user.name,
       email: user.email,
       username: user.username,
-      phoneNumber: user.phone
+      phoneNumber: user.phone,
     });
   } catch (error) {
     console.error(error);
@@ -136,15 +136,14 @@ exports.updateUserProfile = async (req, res) => {
     const { userId } = req.params;
     const { name, email, phone, username } = req.body;
 
-    let user = await User.findById(userId);
-
-    // Check if the user exists
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!name && !email && !phone && !username) {
+      return res.status(400).json({ message: "No fields to update" });
     }
 
-    // Update only the fields that were provided
-    if (name) user.name = name;
+    // @esc: update only fields provided
+    const updateData = {};
+    if (name) updateData.name = name;
+
     if (email) {
       // Validate email before updating
       const emailRegex =
@@ -152,8 +151,9 @@ exports.updateUserProfile = async (req, res) => {
       if (!email.match(emailRegex)) {
         return res.status(400).json({ message: "Invalid email format" });
       }
-      user.email = email;
+      updateData.email = email;
     }
+
     if (phone) {
       // Validate phone number before updating
       const phoneRegex = /^(\+234|0)[789]\d{9}$/;
@@ -163,15 +163,27 @@ exports.updateUserProfile = async (req, res) => {
             "Invalid phone number format (e.g., +2347012345678 or 07012345678)",
         });
       }
-      user.phone = phone;
+      updateData.phone = phone;
     }
 
-    if (username) user.username = username;
+    if (username) updateData.username = username;
 
-    await user.save();
+    // @desc: run the patch request by finding and update the provided userID
+    const user = await User.findByIdAndUpdate(
+      { _id: userId },
+      {
+        $set: updateData,
+      },
+      { new: true, runValidators: true }
+    );
 
-    res.status(200).json({
-      message: "User profile updated successfully",
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: "User profile updated successfully",
       user,
     });
   } catch (error) {
@@ -185,6 +197,7 @@ exports.updateUserPassword = async (req, res) => {
   try {
     const { userId } = req.params;
     const { currentPassword, newPassword } = req.body;
+
     if (!currentPassword || !newPassword) {
       return res
         .status(400)
@@ -207,12 +220,12 @@ exports.updateUserPassword = async (req, res) => {
     const hashedNewPassword = await bcryptjs.hash(newPassword, 8);
 
     user.password = hashedNewPassword;
-
+    
     await user.save();
 
     // Respond with success
     res.status(200).json({
-      message: "Password updated successfully",
+      success: "Password updated successfully",
     });
   } catch (error) {
     console.error(error);

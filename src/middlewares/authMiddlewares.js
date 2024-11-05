@@ -19,7 +19,7 @@ exports.authMiddleware = (req, res, next) => {
     req.user = verified.id;
     next();
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ message: e.message });
     console.log('Error from jwt', e)
   }
 };
