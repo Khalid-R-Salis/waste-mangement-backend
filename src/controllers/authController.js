@@ -64,7 +64,7 @@ exports.loginUserController = async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "5h",
+        expiresIn: "24h",
       }
     );
 
