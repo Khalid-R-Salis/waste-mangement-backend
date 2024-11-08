@@ -31,6 +31,7 @@ const {
   pendingPickups,
   allUserPickups,
   searchPickUp,
+  submitContactController,
 } = require("../controllers/userController");
 
 //AUTH ROUTES(PUBLIC ROUTES).
@@ -75,5 +76,6 @@ router.put("/users/:userId/password", authMiddleware, updateUserPassword);
 router.get("/user/completed-pickup/:userId", authMiddleware, completedPickups);
 router.get("/user/pending-pickup/:userId", authMiddleware, pendingPickups);
 router.get("/user/all-user-pickups/:userId", authMiddleware, allUserPickups);
+router.post("/user/get-in-touch", authMiddleware, submitContactController);
 
 module.exports = router;

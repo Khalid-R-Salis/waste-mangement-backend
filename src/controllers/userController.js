@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const PickUpRequest = require("../models/pickUprequest");
 const bcryptjs = require("bcryptjs");
+const ContactModel = require("../models/contactModel");
 
 //MAKING REQUEST FOR PICKUPS
 exports.requestPickUp = async (req, res) => {
@@ -17,7 +18,9 @@ exports.requestPickUp = async (req, res) => {
 
     // Check if the user exists
     if (!user) {
-      return res.status(404).json({ error: "User not found. Login to continue." });
+      return res
+        .status(404)
+        .json({ error: "User not found. Login to continue." });
     }
 
     // Create a new pickup request entry
@@ -220,7 +223,7 @@ exports.updateUserPassword = async (req, res) => {
     const hashedNewPassword = await bcryptjs.hash(newPassword, 8);
 
     user.password = hashedNewPassword;
-    
+
     await user.save();
 
     // Respond with success
@@ -258,16 +261,50 @@ exports.searchPickUp = async (req, res) => {
     const formatPickUpData = pickUpRequest.time;
     const pickupData = {
       ...pickUpRequest.toObject(),
-      time: formatDate(formatPickUpData)
-    }
+      time: formatDate(formatPickUpData),
+    };
 
     return res.status(200).json({
       data: pickupData,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({
       message: "An error occurred while searching for the pick-up request",
     });
+  }
+};
+
+// @desc: contact controller
+exports.submitContactController = async (req, res) => {
+  try {
+    const { name, email, phoneNumber, message } = req.body;
+
+    if (!name && !email && !phoneNumber && !message) {
+      return;
+    }
+
+    const submission = await ContactModel.create({
+      name,
+      email,
+      phoneNumber,
+      message,
+    });
+
+    return res.status(200).json({
+      successMessage: `We've recieved your message, we'll get in touch shortly.`,
+      submission
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.code === 11000) {
+      return res.status(500).json({ errCode: error.code})
+    }
+    return res
+      .status(500)
+      .json({
+        error: "Server Error, Please Try Again Later.",
+        err: error.message,
+      });
   }
 };
