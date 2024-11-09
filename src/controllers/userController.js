@@ -54,7 +54,7 @@ exports.completedPickups = async (req, res) => {
     const completedPickups = await PickUpRequest.find({
       userId,
       status: "Completed",
-    });
+    }).sort({ createdAt: -1 });
 
     if (completedPickups.length === 0) {
       return res.status(404).json({ message: "No completed pickups found." });
@@ -77,7 +77,7 @@ exports.pendingPickups = async (req, res) => {
     const pendingPickups = await PickUpRequest.find({
       userId,
       status: "Pending",
-    });
+    }).sort({ createdAt: -1 });
 
     if (pendingPickups.length === 0) {
       return res.status(404).json({ message: "No pending pickups found." });
@@ -97,7 +97,7 @@ exports.allUserPickups = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const allPickups = await PickUpRequest.find({ userId });
+    const allPickups = await PickUpRequest.find({ userId }).sort({ createdAt: -1 });
 
     const user = await User.findOne({ _id: userId });
 
