@@ -141,8 +141,6 @@ exports.getAllPickUp = async (req, res) => {
       allHazardousOrders,
     };
 
-    console.log(allOrganicOrders, allRecycledOrders, allHazardousOrders);
-
     const formatDate = (dateString) => {
       const date = new Date(dateString);
 
