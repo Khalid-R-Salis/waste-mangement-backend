@@ -119,15 +119,48 @@ exports.getAllStaff = async (req, res) => {
 // FETCH ALL PICKUPS
 exports.getAllPickUp = async (req, res) => {
   try {
-    const pickUpRequests = await PickUpRequest.find();
+    const pickUpRequests = await PickUpRequest.find().sort({ createdAt: -1 });
 
     if (pickUpRequests.length === 0) {
-      return res.status(404).json({ message: "No pick up request found." });
+      return res.status(404).json({ message: "No pick up requests found." });
     }
+
+    const allOrganicOrders = pickUpRequests.filter(
+      (item) => item.category === "Organic"
+    ).length;
+    const allRecycledOrders = pickUpRequests.filter(
+      (item) => item.category === "Recyclable"
+    ).length;
+    const allHazardousOrders = pickUpRequests.filter(
+      (item) => item.category === "Hazardous"
+    ).length;
+
+    const ordersCount = {
+      allOrganicOrders,
+      allRecycledOrders,
+      allHazardousOrders,
+    };
+
+    console.log(allOrganicOrders, allRecycledOrders, allHazardousOrders);
+
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+
+      // Format options
+      const options = { day: "numeric", month: "long", year: "numeric" };
+
+      return date.toLocaleDateString("en-GB", options);
+    };
+
+    const updatedPickUpRequest = pickUpRequests.map((order) => ({
+      ...order._doc,
+      time: formatDate(order.time),
+    }));
 
     res.status(200).json({
       message: "Pick up request retrieved successfully.",
-      pickUpRequests,
+      updatedPickUpRequest,
+      ordersCount
     });
   } catch (error) {
     console.error(error);
