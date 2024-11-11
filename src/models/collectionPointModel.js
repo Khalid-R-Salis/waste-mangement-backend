@@ -2,6 +2,16 @@ const mongoose = require("mongoose");
 
 const collectionPointSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    driverName: {
+      type: String,
+      default: null,
+      required: true,
+    },
     capacity: {
       type: Number,
       required: true,
@@ -16,20 +26,16 @@ const collectionPointSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["organic", "recyclable", "hazardous"],
+      enum: ["Organic", "Recyclable", "Hazardous"],
       required: true,
     },
-    phone: {
+    status: {
       type: String,
-      required: true,
+      enum: ["Pending", "Completed"],
+      default: "Pending",
     },
-    user_name: {
+    userPhoneNumber: {
       type: String,
-      required: true,
-    },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true,
     },
   },

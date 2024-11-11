@@ -45,7 +45,7 @@ router.post(
   adminMiddleware,
   createNewStaff
 );
-router.put(
+router.patch(
   "/admin/update-pickup-request/:id",
   authMiddleware,
   adminMiddleware,
