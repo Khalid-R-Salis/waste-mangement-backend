@@ -1,10 +1,12 @@
 const User = require("../models/userModel");
 const PickUpRequest = require("../models/pickUprequest");
 const bcryptjs = require("bcryptjs");
+const CollectionPoint = require("../models/collectionPointModel");
+const { v4: uuidv4 } = require("uuid");
 
 //CREATE A NEW STAFF CONTROLLER
 exports.createNewStaff = async (req, res) => {
-  const { name, email, phone, role } = req.body;
+  const { name, email, phone } = req.body;
   try {
     // Check if the user already exists
     let user = await User.findOne({ email });
@@ -14,10 +16,12 @@ exports.createNewStaff = async (req, res) => {
         .json({ message: "User already exists with this email" });
     }
 
-    // Set default password to '1234' and hash it
-    const defaultPassword = "1234";
+    // Set default password to '1234' and hash it and also create a unqiue driverID
+    const defaultPassword = "trash1234";
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(defaultPassword, salt);
+
+    const generateUniqueDriverId = uuidv4().slice(0, 5).toUpperCase();  
 
     // Create the new staff user object
     user = new User({
@@ -25,7 +29,8 @@ exports.createNewStaff = async (req, res) => {
       email,
       phone,
       password: hashedPassword,
-      role: role || "staff",
+      role: "staff",
+      driverID: generateUniqueDriverId
     });
 
     // Save the user to the database
@@ -43,38 +48,58 @@ exports.createNewStaff = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Server Error. Please try again later" });
   }
 };
 
 // UPDATE A PICK UP REQUEST CONTROLLER
 exports.updatePickUpRequest = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { driverName, capacity, location, time, category, userPhoneNumber } =
+    req.body;
 
   try {
-    // Validate that the status provided is one of the allowed enum values
-    if (!["Pending", "Completed"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status value" });
+    const driver = await User.findOne({ name: driverName , role: 'staff'});
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    const newCollectionOrder = await CollectionPoint.create({
+      driverWorkID: driver._id,
+      driverName,
+      capacity,
+      location,
+      time,
+      category,
+      userPhoneNumber,
+    });
+
+    if (!newCollectionOrder) {
+      return res
+        .status(500)
+        .json({ message: "Something happened. Try again later" });
     }
 
     const updatedPickUpRequest = await PickUpRequest.findByIdAndUpdate(
       id,
-      { status },
+      { status: "Driver Allocated" },
       { new: true }
     );
 
     if (!updatedPickUpRequest) {
       return res
         .status(404)
-        .json({ message: "pick up request point not found" });
+        .json({ message: "Pick up request point not found" });
     }
 
     // Return the updated collection point
-    res.status(200).json(updatedPickUpRequest);
+    res
+      .status(200)
+      .json({ success: "Allocation Successful", newCollectionOrder });
   } catch (error) {
-    console.error("Error updating pick up request point:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error updating pick up request point:", error.message);
+    res.status(500).json({ error: "Server error. Please try again later" });
   }
 };
 
@@ -105,14 +130,16 @@ exports.getAllStaff = async (req, res) => {
 
     // If no staff are found
     if (staffs.length === 0) {
-      return res.status(404).json({ message: "No staff found" });
+      return res
+        .status(404)
+        .json({ message: "No staff available at the moment." });
     }
 
     // Return the list of staffs
     res.status(200).json({ staffs, totalStaff: staffs.length });
   } catch (error) {
     console.error("Error fetching staffs:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Server error. Please try again later" });
   }
 };
 
@@ -120,6 +147,7 @@ exports.getAllStaff = async (req, res) => {
 exports.getAllPickUp = async (req, res) => {
   try {
     const pickUpRequests = await PickUpRequest.find().sort({ createdAt: -1 });
+    const users = await User.find({});
 
     if (pickUpRequests.length === 0) {
       return res.status(404).json({ message: "No pick up requests found." });
@@ -141,6 +169,14 @@ exports.getAllPickUp = async (req, res) => {
       allHazardousOrders,
     };
 
+    const allUsers = users.filter((user) => user.role === "user").length;
+    const allStaffs = users.filter((user) => user.role === "staff").length;
+
+    const allRoles = {
+      allUsers,
+      allStaffs,
+    };
+
     const formatDate = (dateString) => {
       const date = new Date(dateString);
 
@@ -158,7 +194,8 @@ exports.getAllPickUp = async (req, res) => {
     res.status(200).json({
       message: "Pick up request retrieved successfully.",
       updatedPickUpRequest,
-      ordersCount
+      ordersCount,
+      allRoles,
     });
   } catch (error) {
     console.error(error);

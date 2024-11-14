@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    driverID: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

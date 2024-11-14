@@ -1,8 +1,13 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
+
+const generateUniqueSearchId = () => {
+  return uuidv4().slice(0, 6).toUpperCase();
+};
 
 const collectionPointSchema = new mongoose.Schema(
   {
-    userId: {
+    driverWorkID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -11,6 +16,11 @@ const collectionPointSchema = new mongoose.Schema(
       type: String,
       default: null,
       required: true,
+    },
+    collectionID: {
+      type: String,
+      unique: true,
+      default: generateUniqueSearchId
     },
     capacity: {
       type: Number,
@@ -22,6 +32,7 @@ const collectionPointSchema = new mongoose.Schema(
     },
     time: {
       type: Date,
+      default: Date.now(),
       required: true,
     },
     category: {
