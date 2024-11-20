@@ -21,7 +21,7 @@ exports.createNewStaff = async (req, res) => {
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(defaultPassword, salt);
 
-    const generateUniqueDriverId = uuidv4().slice(0, 5).toUpperCase();  
+    const generateUniqueDriverId = uuidv4().slice(0, 5).toUpperCase();
 
     // Create the new staff user object
     user = new User({
@@ -30,7 +30,7 @@ exports.createNewStaff = async (req, res) => {
       phone,
       password: hashedPassword,
       role: "staff",
-      driverID: generateUniqueDriverId
+      driverID: generateUniqueDriverId,
     });
 
     // Save the user to the database
@@ -58,47 +58,71 @@ exports.updatePickUpRequest = async (req, res) => {
   const { driverName, capacity, location, time, category, userPhoneNumber } =
     req.body;
 
+  const session = await PickUpRequest.startSession(); // @desc: setting up session to make the whole operation work concurrently or fail concurrently
+  session.startTransaction();
+
   try {
-    const driver = await User.findOne({ name: driverName , role: 'staff'});
+    const driver = await User.findOne({
+      name: driverName,
+      role: "staff",
+    }).session(session);
 
     if (!driver) {
+      await session.abortTransaction();
       return res.status(404).json({ message: "Driver not found" });
     }
 
-    const newCollectionOrder = await CollectionPoint.create({
-      driverWorkID: driver._id,
-      driverName,
-      capacity,
-      location,
-      time,
-      category,
-      userPhoneNumber,
-    });
-
-    if (!newCollectionOrder) {
-      return res
-        .status(500)
-        .json({ message: "Something happened. Try again later" });
-    }
-
-    const updatedPickUpRequest = await PickUpRequest.findByIdAndUpdate(
-      id,
-      { status: "Driver Allocated" },
-      { new: true }
+    const pickupRequest = await PickUpRequest.findOne({ _id: id }).session(
+      session
     );
 
-    if (!updatedPickUpRequest) {
+    if (!pickupRequest) {
+      await session.abortTransaction();
       return res
         .status(404)
         .json({ message: "Pick up request point not found" });
     }
+
+    const updatedPickupRequest = await PickUpRequest.findByIdAndUpdate(
+      {
+        _id: pickupRequest._id,
+      },
+      { status: "Driver Allocated" },
+      {
+        new: true,
+        runValidators: true,
+        session,
+      }
+    );
+
+    const newCollectionOrder = await CollectionPoint.create(
+      [
+        {
+          driverWorkID: driver._id,
+          pickupOrder: updatedPickupRequest._id,
+          driverName,
+          capacity,
+          location,
+          time,
+          category,
+          userPhoneNumber,
+        },
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
+    await session.endSession();
 
     // Return the updated collection point
     res
       .status(200)
       .json({ success: "Allocation Successful", newCollectionOrder });
   } catch (error) {
-    console.error("Error updating pick up request point:", error.message);
+    await session.abortTransaction();
+    await session.endSession();
+
+    console.error("Error updating pick up request point:", error);
     res.status(500).json({ error: "Server error. Please try again later" });
   }
 };

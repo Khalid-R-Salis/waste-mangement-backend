@@ -12,6 +12,11 @@ const collectionPointSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    pickupOrder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PickUpRequest',
+      required: true
+    },
     driverName: {
       type: String,
       default: null,
