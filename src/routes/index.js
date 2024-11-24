@@ -4,6 +4,7 @@ const router = express.Router();
 // MIDDLEWARE IMPORT
 const { authMiddleware } = require("../middlewares/authMiddlewares");
 const { adminMiddleware } = require("../middlewares/adminMiddleware");
+const { driverMiddleware } = require("../middlewares/driverMiddleware");
 
 // IMPORTING AUTH CONTROLLERS
 const {
@@ -33,6 +34,12 @@ const {
   searchPickUp,
   submitContactController,
 } = require("../controllers/userController");
+
+// @desc: Importing all driver controllers
+const {
+  getAllDriverPickupOrder,
+  completeOrderPickUp,
+} = require("../controllers/driverController");
 
 //AUTH ROUTES(PUBLIC ROUTES).
 router.post("/register", registerController);
@@ -77,5 +84,13 @@ router.get("/user/completed-pickup/:userId", authMiddleware, completedPickups);
 router.get("/user/pending-pickup/:userId", authMiddleware, pendingPickups);
 router.get("/user/all-user-pickups/:userId", authMiddleware, allUserPickups);
 router.post("/user/get-in-touch", authMiddleware, submitContactController);
+
+// @desc: Driver protected routes
+router.get(
+  "/staff/all-orders/:driverID",
+  authMiddleware,
+  driverMiddleware,
+  getAllDriverPickupOrder
+);
 
 module.exports = router;

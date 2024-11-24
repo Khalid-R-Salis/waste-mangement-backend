@@ -55,7 +55,7 @@ exports.createNewStaff = async (req, res) => {
 // UPDATE A PICK UP REQUEST CONTROLLER
 exports.updatePickUpRequest = async (req, res) => {
   const { id } = req.params;
-  const { driverName, capacity, location, time, category, userPhoneNumber } =
+  const { driverName, capacity, location, category, userPhoneNumber } =
     req.body;
 
   const session = await PickUpRequest.startSession(); // @desc: setting up session to make the whole operation work concurrently or fail concurrently
@@ -103,7 +103,6 @@ exports.updatePickUpRequest = async (req, res) => {
           driverName,
           capacity,
           location,
-          time,
           category,
           userPhoneNumber,
         },
