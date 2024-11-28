@@ -1,6 +1,8 @@
 const bcryptjs = require("bcryptjs");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
+const { v4: uuidv4 } = require("uuid");
 
 // CONTROLLER FOR HANDLING USER REGISTRATION
 exports.registerController = async (req, res) => {
@@ -32,7 +34,7 @@ exports.registerController = async (req, res) => {
     res.json(user);
   } catch (e) {
     res.status(500).json({ error: e.message });
-    console.log(`Error from register`, e)
+    console.log(`Error from register`, e);
   }
 };
 
@@ -76,11 +78,54 @@ exports.loginUserController = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        username:user.username
+        username: user.username,
       },
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
-    console.log('error from login', e)
+    console.log("error from login", e);
+  }
+};
+
+// @desc: resetting user password by using a default password and sending
+// the user an email with the password with message to change password
+// for enhanced security
+exports.resetPasswordController = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const generateUniqueDriverId = uuidv4().slice(0, 4).toUpperCase();
+    const defaultPassword = `trash-${generateUniqueDriverId}`;  
+
+    const salt = await bcryptjs.genSalt(10);
+    const hashedDefaultPassword = await bcryptjs.hash(defaultPassword, salt);
+    console.log(defaultPassword);
+
+    const emailSubject = `Password Reset Successful!!`;
+    const emailText = `Your password has being reset to ${defaultPassword}. This is not a secure password, kindly login to your dashboard and change to a more secure password.
+    Disclaimer: We are not liable for any security breach.
+    
+    Kind Regards,
+    WMS Trashaway
+    `;
+
+    await sendEmail(user.email, emailSubject, emailText);
+
+    const resetPassword = await User.findOneAndUpdate(
+      { _id: user._id, email },
+      { password: hashedDefaultPassword },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ success: 'Password reset successfully', resetPassword });
+  } catch (error) {
+    console.log("error from reset email", error);
+    res.status(500).json({ error: "Server Error. Trya again Later", error });
   }
 };

@@ -36,7 +36,7 @@ const contactSchema = new Schema({
     type: String,
     required: true
   }
-});
+}, { timestamps: true });
 
 const ContactModel = model('contacts', contactSchema);
 module.exports = ContactModel;

@@ -3,6 +3,7 @@ const PickUpRequest = require("../models/pickUprequest");
 const bcryptjs = require("bcryptjs");
 const CollectionPoint = require("../models/collectionPointModel");
 const { v4: uuidv4 } = require("uuid");
+const sendMail = require("../utils/sendEmail");
 
 //CREATE A NEW STAFF CONTROLLER
 exports.createNewStaff = async (req, res) => {
@@ -16,10 +17,23 @@ exports.createNewStaff = async (req, res) => {
         .json({ message: "User already exists with this email" });
     }
 
-    // Set default password to '1234' and hash it and also create a unqiue driverID
-    const defaultPassword = "trash1234";
+    // Set default password and hash it and also create a unqiue driverID
+    const generateUniquePassword = uuidv4().slice(0, 4).toUpperCase();
+    const defaultPassword = `trash-${generateUniquePassword}`;
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(defaultPassword, salt);
+
+    const emailSubject = `Welcome to WMS Trashaway Pickup, Important Security Alert`;
+    const emailText = `Dear ${name}
+
+      We are thrilled to have you on board, WMS Trashaway offers services for million of users round the country and to achieve maximum user satisfaction, we cannot do with out extinguished staffs. For whom are the backbone of our operation
+      To Log into your account, here is your default password: ${defaultPassword}. For maximum security, please do login into your dashboard and change your password to a more secured one.
+
+      Kind Regards,
+      WMS Trashaway
+    `;
+
+    await sendMail(email, emailSubject, emailText);
 
     const generateUniqueDriverId = uuidv4().slice(0, 5).toUpperCase();
 

@@ -10,6 +10,7 @@ const { driverMiddleware } = require("../middlewares/driverMiddleware");
 const {
   registerController,
   loginUserController,
+  resetPasswordController
 } = require("../controllers/authController");
 
 // IMPORTING ADMIN CONTROLLERS
@@ -39,11 +40,14 @@ const {
 const {
   getAllDriverPickupOrder,
   completeOrderPickUp,
+  searchOrder,
+  rejectPickupOrder,
 } = require("../controllers/driverController");
 
 //AUTH ROUTES(PUBLIC ROUTES).
 router.post("/register", registerController);
 router.post("/login", loginUserController);
+router.put('/reset-password', resetPasswordController);
 
 // ADMIN PROTECTED ROUTES
 router.post(
@@ -92,5 +96,22 @@ router.get(
   driverMiddleware,
   getAllDriverPickupOrder
 );
-
+router.post(
+  "/staff/complete-order/:orderID/:driverID",
+  authMiddleware,
+  driverMiddleware,
+  completeOrderPickUp
+);
+router.post(
+  "/staff/reject-order/:orderID/:driverID",
+  authMiddleware,
+  driverMiddleware,
+  rejectPickupOrder
+);
+router.post(
+  "/staff/search-order",
+  authMiddleware,
+  driverMiddleware,
+  searchOrder
+);
 module.exports = router;
