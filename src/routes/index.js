@@ -10,7 +10,7 @@ const { driverMiddleware } = require("../middlewares/driverMiddleware");
 const {
   registerController,
   loginUserController,
-  resetPasswordController
+  resetPasswordController,
 } = require("../controllers/authController");
 
 // IMPORTING ADMIN CONTROLLERS
@@ -22,6 +22,7 @@ const {
   getAllPickUp,
   getCompletedPickUp,
   getPendingPickUp,
+  deleteStaff,
 } = require("../controllers/adminController");
 
 //IMPORTING USER CONTROLLERS
@@ -47,7 +48,7 @@ const {
 //AUTH ROUTES(PUBLIC ROUTES).
 router.post("/register", registerController);
 router.post("/login", loginUserController);
-router.put('/reset-password', resetPasswordController);
+router.put("/reset-password", resetPasswordController);
 
 // ADMIN PROTECTED ROUTES
 router.post(
@@ -76,6 +77,12 @@ router.get(
   authMiddleware,
   adminMiddleware,
   getPendingPickUp
+);
+router.delete(
+  "/admin/delete-staff/:adminID/:driverID",
+  authMiddleware,
+  adminMiddleware,
+  deleteStaff
 );
 
 //USER ROUTES PROTECTED

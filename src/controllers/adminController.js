@@ -2,6 +2,8 @@ const User = require("../models/userModel");
 const PickUpRequest = require("../models/pickUprequest");
 const bcryptjs = require("bcryptjs");
 const CollectionPoint = require("../models/collectionPointModel");
+const DeleteModel = require("../models/deleteStaffModel");
+
 const { v4: uuidv4 } = require("uuid");
 const sendMail = require("../utils/sendEmail");
 
@@ -206,8 +208,12 @@ exports.getAllPickUp = async (req, res) => {
       allHazardousOrders,
     };
 
+    // @desc: used in adminDasboard on the frontend
     const allUsers = users.filter((user) => user.role === "user").length;
     const allStaffs = users.filter((user) => user.role === "staff").length;
+
+    // @desc: getting all the staffs ~ used in waste management on the frontend
+    const getAllStaffs = users.filter((user) => user.role === "staff");
 
     const allRoles = {
       allUsers,
@@ -233,6 +239,7 @@ exports.getAllPickUp = async (req, res) => {
       updatedPickUpRequest,
       ordersCount,
       allRoles,
+      getAllStaffs,
     });
   } catch (error) {
     console.error(error);
@@ -279,5 +286,53 @@ exports.getPendingPickUp = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error. Please try again later." });
+  }
+};
+
+// @desc: deleting staffs from the database
+exports.deleteStaff = async (req, res) => {
+  const { adminID, driverID } = req.params;
+  const { reason } = req.body;
+
+  try {
+    const driver = await User.findOne({ _id: driverID, role: "staff" });
+    const admin = await User.findOne({ _id: adminID, role: "admin" });
+
+    if (!driver) {
+      return res.status(404).json({
+        message: "Driver not found",
+      });
+    }
+
+    if (!admin) {
+      return res.status(404).json({
+        message: "Admin not found",
+      });
+    }
+
+    const deleteStaff = await User.findOneAndDelete({
+      _id: driverID,
+      role: "staff",
+    });
+
+    // @desc: create a reason for deleting the staff
+    const createDeleteHistory = await DeleteModel.create({
+      reason,
+      adminID,
+      driverID,
+    });
+
+    res
+      .status(200)
+      .json({
+        sucess: "Staff deleted successfully",
+        createDeleteHistory,
+        deleteStaff,
+      });
+  } catch (error) {
+    console.log("error from delete staff", error);
+    return res.status(500).json({
+      error: "Server Error. Try Again Later",
+    });
   }
 };

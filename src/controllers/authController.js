@@ -105,7 +105,6 @@ exports.resetPasswordController = async (req, res) => {
 
     const salt = await bcryptjs.genSalt(10);
     const hashedDefaultPassword = await bcryptjs.hash(defaultPassword, salt);
-    console.log(defaultPassword);
 
     const emailSubject = `Password Reset Successful!!`;
     const emailText = `Your password has being reset to ${defaultPassword}. This is not a secure password, kindly login to your dashboard and change to a more secure password.

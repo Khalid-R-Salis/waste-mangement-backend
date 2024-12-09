@@ -174,11 +174,14 @@ exports.rejectPickupOrder = async (req, res) => {
     }
 
     const deletePickupAllocatedToDriver =
-      await CollectionPoint.findByIdAndDelete({
-        _id: orderID,
-        driverID: driver._id,
-        pickupOrder: order.pickupOrder,
-      }, { session });
+      await CollectionPoint.findByIdAndDelete(
+        {
+          _id: orderID,
+          driverID: driver._id,
+          pickupOrder: order.pickupOrder,
+        },
+        { session }
+      );
 
     if (!deletePickupAllocatedToDriver) {
       await session.abortTransaction();
@@ -187,16 +190,19 @@ exports.rejectPickupOrder = async (req, res) => {
         .json({ message: "Order not available. Try Again Later" });
     }
 
-    const rejectedPickup = await RejectPickupModel.create([
-      {
-        driverID,
-        orderID,
-        collectionID: order.collectionID,
-        driverName: driver._id,
-        driverPhoneNumber: driver.phone,
-        rejectReason: rejectOrderReason,
-      }
-    ], { session });
+    const rejectedPickup = await RejectPickupModel.create(
+      [
+        {
+          driverID,
+          orderID,
+          collectionID: order.collectionID,
+          driverName: driver._id,
+          driverPhoneNumber: driver.phone,
+          rejectReason: rejectOrderReason,
+        },
+      ],
+      { session }
+    );
 
     await session.commitTransaction();
     session.endSession();
@@ -204,7 +210,7 @@ exports.rejectPickupOrder = async (req, res) => {
     res.status(200).json({ success: "Order Rejected", rejectedPickup });
   } catch (error) {
     await session.abortTransaction();
-    session.endSession()
+    session.endSession();
 
     console.log("error from reject order", error);
     res.status(500).json({ error: "Server error", errorMsg: error.message });
