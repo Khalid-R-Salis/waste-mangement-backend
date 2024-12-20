@@ -35,6 +35,7 @@ const {
   allUserPickups,
   searchPickUp,
   submitContactController,
+  deletePickupController
 } = require("../controllers/userController");
 
 // @desc: Importing all driver controllers
@@ -88,7 +89,7 @@ router.delete(
 //USER ROUTES PROTECTED
 router.post("/user/request-pickup/:userId", authMiddleware, requestPickUp);
 router.post("/user/search-pickup", authMiddleware, searchPickUp);
-
+router.delete('/user/delete-pickup/:userID/:orderID', authMiddleware, deletePickupController);
 router.patch("/users/:userId", authMiddleware, updateUserProfile);
 router.put("/users/:userId/password", authMiddleware, updateUserPassword);
 router.get("/user/completed-pickup/:userId", authMiddleware, completedPickups);

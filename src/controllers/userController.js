@@ -304,3 +304,29 @@ exports.submitContactController = async (req, res) => {
       });
   }
 };
+
+// @desc: DELETE PICKUP CONTROLLER
+exports.deletePickupController = async (req, res) => {
+  const { userID, orderID } = req.params;
+
+  try {
+    const user = await User.findOne({ _id: userID });
+
+    if (!user) {
+      return res.status(404).json({ messge: 'No user found.' });
+    }
+
+    const deleteOrder = await PickUpRequest.findOneAndDelete({ _id: orderID });
+    
+    if (!deleteOrder) {
+      return res.status(404).json({ message: 'Pickup Order not available' });
+    }
+    
+    res.status(200).json({ message: 'Pickup deleted successfully.' });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      error: "An error occurred while deleting for the pick-up request",
+    });
+  }
+};
