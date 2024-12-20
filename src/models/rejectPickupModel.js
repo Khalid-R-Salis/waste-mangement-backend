@@ -25,7 +25,6 @@ const rejectSchema = new Schema({
   },
   rejectReason: {
     type: String,
-    required: true
   }
 }, { timestamps: true });
 

@@ -9,10 +9,6 @@ exports.requestPickUp = async (req, res) => {
     const { userId } = req.params;
     const { capacity, location, time, category } = req.body;
 
-    if (!capacity || !location || !time || !category) {
-      return res.status(400).json({ error: "All fields are required." });
-    }
-
     // Fetch the user by userId
     let user = await User.findById(userId);
 
