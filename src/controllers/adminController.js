@@ -25,6 +25,11 @@ exports.createNewStaff = async (req, res) => {
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(defaultPassword, salt);
 
+    // Temporary console log for debugging/testing
+    console.log(
+      `Temporary Log: The default password for ${email} is ${defaultPassword}`
+    );
+
     const emailSubject = `Welcome to WMS Trashaway Pickup, Important Security Alert`;
     const emailText = `Dear ${name}
 
@@ -322,13 +327,11 @@ exports.deleteStaff = async (req, res) => {
       driverID,
     });
 
-    res
-      .status(200)
-      .json({
-        sucess: "Staff deleted successfully",
-        createDeleteHistory,
-        deleteStaff,
-      });
+    res.status(200).json({
+      sucess: "Staff deleted successfully",
+      createDeleteHistory,
+      deleteStaff,
+    });
   } catch (error) {
     console.log("error from delete staff", error);
     return res.status(500).json({
