@@ -41,6 +41,7 @@ async function sendMail(userEmail, emailSubject, emailText) {
     };
 
     const emailSent = await transport.sendMail(mailOptions);
+    console.log(emailSent);
     return emailSent;
   } catch (error) {
     return error;
