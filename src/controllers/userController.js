@@ -56,9 +56,22 @@ exports.completedPickups = async (req, res) => {
       return res.status(404).json({ message: "No completed pickups found." });
     }
 
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+
+      const options = { day: "numeric", month: "long", year: "numeric" };
+
+      return date.toLocaleString("en-GB", options);
+    };
+
+    const allCompletedPickups = completedPickups.map((item) => ({
+      ...item._doc,
+      time: formatDate(item.time),
+    }));
+
     res.status(200).json({
       message: "Completed pickups retrieved successfully.",
-      completedPickups,
+      allCompletedPickups,
     });
   } catch (error) {
     console.error(error);
@@ -93,7 +106,9 @@ exports.allUserPickups = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const allPickups = await PickUpRequest.find({ userId }).sort({ createdAt: -1 });
+    const allPickups = await PickUpRequest.find({ userId }).sort({
+      createdAt: -1,
+    });
 
     const user = await User.findOne({ _id: userId });
 
@@ -289,19 +304,17 @@ exports.submitContactController = async (req, res) => {
 
     return res.status(200).json({
       successMessage: `We've recieved your message, we'll get in touch shortly.`,
-      submission
+      submission,
     });
   } catch (error) {
     console.log(error);
     if (error.code === 11000) {
-      return res.status(500).json({ errCode: error.code})
+      return res.status(500).json({ errCode: error.code });
     }
-    return res
-      .status(500)
-      .json({
-        error: "Server Error, Please Try Again Later.",
-        err: error.message,
-      });
+    return res.status(500).json({
+      error: "Server Error, Please Try Again Later.",
+      err: error.message,
+    });
   }
 };
 
@@ -313,16 +326,16 @@ exports.deletePickupController = async (req, res) => {
     const user = await User.findOne({ _id: userID });
 
     if (!user) {
-      return res.status(404).json({ messge: 'No user found.' });
+      return res.status(404).json({ messge: "No user found." });
     }
 
     const deleteOrder = await PickUpRequest.findOneAndDelete({ _id: orderID });
-    
+
     if (!deleteOrder) {
-      return res.status(404).json({ message: 'Pickup Order not available' });
+      return res.status(404).json({ message: "Pickup Order not available" });
     }
-    
-    res.status(200).json({ message: 'Pickup deleted successfully.' });
+
+    res.status(200).json({ message: "Pickup deleted successfully." });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
